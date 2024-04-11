@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { DataContext } from "./context/DataContext";
 import { SearchContext } from "./context/SearchContext";
@@ -6,27 +6,20 @@ import SearchBar from "./Components/SearchBar";
 import Gallery from "./Components/Gallery";
 import ArtistView from "./Components/ArtistView";
 import AlbumView from "./Components/AlbumView";
+import { createResource as fetchData } from "./helper";
 
 function App() {
   const [message, setMessage] = useState("Search for Music!");
-  const [data, setData] = useState([]);
+  const [resource, setResource] = useState(null);
   const searchInput = useRef("");
 
-  const handleSearch = async (e, term) => {
+  const handleSearch = (e, term) => {
     e.preventDefault();
-    const fetchData = async () => {
-      const url = encodeURI(`https://itunes.apple.com/search?term=${term}`);
-      document.title = `${term} Music`;
-      const response = await fetch(url);
-      const data = await response.json();
-      console.log(data);
-      if (data.results.length) {
-        setData(data.results);
-      } else {
-        setMessage("Not Found");
-      }
-    };
-    if (term) fetchData();
+    if (term) {
+      setResource(fetchData(term));
+    } else {
+      setMessage("Please enter a search term");
+    }
   };
 
   return (
@@ -43,9 +36,16 @@ function App() {
             <Route path="/" element={<SearchBar />} />
           </Routes>
         </SearchContext.Provider>
-        <DataContext.Provider value={data}>
+        <DataContext.Provider value={resource}>
           <Routes>
-            <Route path="/" element={<Gallery />} />
+            <Route
+              path="/"
+              element={
+                <Suspense fallback={<h1>Loading...</h1>}>
+                  <Gallery />
+                </Suspense>
+              }
+            />
             <Route path="/album/:id" element={<AlbumView />} />
             <Route path="/artist/:id" element={<ArtistView />} />
           </Routes>
