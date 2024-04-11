@@ -2,6 +2,7 @@ import { useState, useRef, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { DataContext } from "./context/DataContext";
 import { SearchContext } from "./context/SearchContext";
+import Spinner from "./Components/Spinner";
 import SearchBar from "./Components/SearchBar";
 import Gallery from "./Components/Gallery";
 import ArtistView from "./Components/ArtistView";
@@ -41,7 +42,7 @@ function App() {
             <Route
               path="/"
               element={
-                <Suspense fallback={<h1>Loading...</h1>}>
+                <Suspense fallback={<Spinner />}>
                   <Gallery />
                 </Suspense>
               }
